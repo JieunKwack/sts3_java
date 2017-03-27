@@ -12,9 +12,9 @@ public class Main {
 	public static final int numData = 30;
 	public static final int numQuery = 900;
 	public static final int lenTs = 128;
-	public static final double sigma = 0.18; // row cell size
-	public static final double epsilon = 21; // column cell size
-	public static final int k = 5; // set the # of top K
+	public static final double sigma = 0.18;// 0.18; // row cell size
+	public static final double epsilon = 64;// 21; // column cell size
+	public static final int k = 1; // set the # of top K
 	public static int maxNumber;
 	
 	public static CSVreader Data, Query;
@@ -23,11 +23,12 @@ public class Main {
 	public static ArrayList<Ans> ans;
 	public static int error = 0;
 	public static void main(String[] args) throws IOException {
-		Data = new CSVreader("C:/Users/monster/Documents/2016.WV/STS3/CBF/CBF_TRAIN.csv", numData, lenTs);
-		Query = new CSVreader("C:/Users/monster/Documents/2016.WV/STS3/CBF/CBF_TEST.csv", numQuery, lenTs);
+		Data = new CSVreader("src/data/CBF_TRAIN.csv", numData, lenTs);
+		Query = new CSVreader("src/data/CBF_TEST.csv", numQuery, lenTs);
 		BD = new Bound(Data);
 		BD.setRowsAndCols(sigma, epsilon);
-		maxNumber = BD.rows * BD.cols;
+		
+		maxNumber = (BD.rows - 1) * (int) Math.round((BD.tmax - BD.tmin)/epsilon) + BD.cols;
 		
 		d = new ArrayList<TimeSeriesTranstoSet>();
 		q = new ArrayList<TimeSeriesTranstoSet>();
@@ -37,8 +38,9 @@ public class Main {
 			d.add(item);
 		}
 		
-		AscendingObj ascending = new AscendingObj();		
-		for (int i = 0; i < numQuery; i++) {
+		AscendingObj ascending = new AscendingObj();
+		
+		for (int i = 0; i < numQuery; i++) {//query index
 			ans = new ArrayList<Ans>();
 			TimeSeriesTranstoSet query = Trans_outQuery_to_Set(i);
 			q.add(query);
@@ -63,10 +65,21 @@ public class Main {
 					Collections.sort(ans, ascending);
 				}
 			}
-//			System.out.println(ans.size());
-			if (d.get(ans.get(ans.size()-1).index).label != query.label) error++;
+			
+//			for(int j=0;j<k;j++){
+//				System.out.println(ans.get(j).index);
+//				System.out.println(ans.get(j).jac);
+//			}
+			
+			if (d.get(ans.get(ans.size()-1).index).label != query.label) {
+				error++;
+				System.out.println(ans.get(ans.size()-1).index + "\t" + d.get(ans.get(ans.size()-1).index).label);
+				System.out.println(i + "\t" + query.label);
+			}
 		}
-		System.out.println((double)error/numQuery); // error rate = (#wrongly classified ts) / (#test)
+		System.out.println(maxNumber);
+		System.out.println(BD.rows + " " + BD.cols);
+		System.out.println(error + "\t" +(double)error/numQuery); // error rate = (#wrongly classified ts) / (#test)
 	}
 
 	public static TimeSeriesTranstoSet Trans_outQuery_to_Set(int index) {
