@@ -14,14 +14,12 @@ public class Main {
 	public static final int lenTs = 128;
 	public static final double sigma = 0.18; // row cell size
 	public static final double epsilon = 21; // column cell size
-	public static final int k = 1; // set the # of top K
+	public static final int k = 5; // set the # of top K
 	public static int maxNumber;
 	
 	public static CSVreader Data, Query;
 	public static Bound BD;
 	public static ArrayList<TimeSeriesTranstoSet> d, q;
-//	public static Ans[] ans;
-//	public static Ans ans;
 	public static ArrayList<Ans> ans;
 	public static int error = 0;
 	public static void main(String[] args) throws IOException {
@@ -44,7 +42,6 @@ public class Main {
 			ans = new ArrayList<Ans>();
 			TimeSeriesTranstoSet query = Trans_outQuery_to_Set(i);
 			q.add(query);
-//			ans.init();
 			for (int j = 0; j < numData; j++) {
 				//compute jaccard similarity
 				Set<Integer> U = new HashSet<Integer>(d.get(j).set);
@@ -65,16 +62,9 @@ public class Main {
 					ans.add(e);
 					Collections.sort(ans, ascending);
 				}
-				
-				
-//				if (ans.top1 < jac) {
-//					// sudo code
-//					//minheap 정의 필요
-//  					1. remove ans.top1
-//  					2. add jac
-//				}
 			}
-			if (d.get(ans.get(0).index).label != query.label) error++;
+//			System.out.println(ans.size());
+			if (d.get(ans.get(ans.size()-1).index).label != query.label) error++;
 		}
 		System.out.println((double)error/numQuery); // error rate = (#wrongly classified ts) / (#test)
 	}
@@ -89,10 +79,6 @@ public class Main {
 		for (Iterator<Integer> i = qout.set.iterator(); i.hasNext(); ) {
 			Qout.add(i.next() + maxNumber);
 		}
-//		if (!qout.set.isEmpty()){
-//			System.out.println(qout.set);
-//			System.out.println(Qout);
-//		}
 		Qin.set.addAll(Qout);
 		
 		return Qin;
