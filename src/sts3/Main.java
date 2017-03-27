@@ -3,6 +3,8 @@ package sts3;
 import java.io.IOException;
 import java.util.Set;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -12,14 +14,15 @@ public class Main {
 	public static final int lenTs = 128;
 	public static final double sigma = 0.18; // row cell size
 	public static final double epsilon = 21; // column cell size
-	public static final int k = 5; // set the # of top K
+	public static final int k = 1; // set the # of top K
 	public static int maxNumber;
 	
 	public static CSVreader Data, Query;
 	public static Bound BD;
 	public static ArrayList<TimeSeriesTranstoSet> d, q;
 //	public static Ans[] ans;
-	public static Ans ans;
+//	public static Ans ans;
+	public static ArrayList<Ans> ans;
 	public static int error = 0;
 	public static void main(String[] args) throws IOException {
 		Data = new CSVreader("C:/Users/monster/Documents/2016.WV/STS3/CBF/CBF_TRAIN.csv", numData, lenTs);
@@ -36,11 +39,12 @@ public class Main {
 			d.add(item);
 		}
 		
-		ans = new Ans();
+		AscendingObj ascending = new AscendingObj();		
 		for (int i = 0; i < numQuery; i++) {
+			ans = new ArrayList<Ans>();
 			TimeSeriesTranstoSet query = Trans_outQuery_to_Set(i);
 			q.add(query);
-			ans.init();
+//			ans.init();
 			for (int j = 0; j < numData; j++) {
 				//compute jaccard similarity
 				Set<Integer> U = new HashSet<Integer>(d.get(j).set);
@@ -50,10 +54,19 @@ public class Main {
 				I.retainAll(query.set);
 				
 				double jac = (double)I.size()/U.size();
-				if (ans.isempty() || ans.jac < jac) {
-					ans.jac = jac;
-					ans.index = j;
+				if (ans.size() < k) {
+					Ans e = new Ans(jac, j);
+					ans.add(e);
+					Collections.sort(ans, ascending);
 				}
+				else if (ans.get(0).jac < jac) {
+					Ans e = new Ans(jac, j);
+					ans.remove(0);
+					ans.add(e);
+					Collections.sort(ans, ascending);
+				}
+				
+				
 //				if (ans.top1 < jac) {
 //					// sudo code
 //					//minheap 정의 필요
@@ -61,7 +74,7 @@ public class Main {
 //  					2. add jac
 //				}
 			}
-			if (d.get(ans.index).label != query.label) error++;
+			if (d.get(ans.get(0).index).label != query.label) error++;
 		}
 		System.out.println((double)error/numQuery); // error rate = (#wrongly classified ts) / (#test)
 	}
@@ -111,4 +124,11 @@ public class Main {
 		
 		return qinout;
 	}
+}
+
+class AscendingObj implements Comparator<Ans> {	 
+    @Override
+    public int compare(Ans lhs, Ans rhs) {
+        return Double.compare(lhs.getJac(), rhs.getJac());
+    }
 }
