@@ -1,7 +1,8 @@
 package sts3;
 
 public class Ans {
-	double jac = -1;
+	private static final double nan = -1;
+	double jac = nan;
 	int index;
 	
 //	public Ans() {
@@ -9,10 +10,13 @@ public class Ans {
 //	}
 	
 	public boolean isempty() {
-		if (this.jac == -1) {
+		if (this.jac == nan) {
 			return true;
 		}
 		return false;
 	}
 	
+	public void init() {
+		this.jac = nan;
+	}
 }

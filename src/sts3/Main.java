@@ -2,6 +2,7 @@ package sts3;
 
 import java.io.IOException;
 import java.util.Set;
+import java.util.ArrayList;
 import java.util.HashSet;
 
 public class Main {
@@ -13,31 +14,39 @@ public class Main {
 	public static final int k = 5; // set the # of top K
 	
 	public static CSVreader Data, Query;
-	public static TimeSeriesTranstoSet d, q;
+	public static Bound BD;
+	public static ArrayList<TimeSeriesTranstoSet> d, q;
 //	public static Ans[] ans;
 	public static Ans ans;
 	public static int error = 0;
 	public static void main(String[] args) throws IOException {
 		Data = new CSVreader("C:/Users/monster/Documents/2016.WV/STS3/CBF/CBF_TRAIN.csv", numData, lenTs);
 		Query = new CSVreader("C:/Users/monster/Documents/2016.WV/STS3/CBF/CBF_TEST.csv", numQuery, lenTs);
-		Data.getBound();
+		BD = new Bound(Data);
 		
-		d = new TimeSeriesTranstoSet(Data, epsilon, sigma);
-		q = new TimeSeriesTranstoSet(Query, epsilon, sigma);
+		d = new ArrayList<TimeSeriesTranstoSet>();
+		q = new ArrayList<TimeSeriesTranstoSet>();
+		
+		for (int i = 0; i < numData; i++) {
+			TimeSeriesTranstoSet item = new TimeSeriesTranstoSet(Data, i, BD, epsilon, sigma);
+			d.add(item);
+		}
 		
 		ans = new Ans();
-		
 		for (int i = 0; i < numQuery; i++) {
+			TimeSeriesTranstoSet query = new TimeSeriesTranstoSet(Query, i, BD, epsilon, sigma);
+			q.add(query);
+			ans.init();
 			for (int j = 0; j < numData; j++) {
-				//jaccard similarity
-				Set<Integer> U = new HashSet<Integer>(d.s[j]);
-				Set<Integer> I = new HashSet<Integer>(d.s[j]);
+				//compute jaccard similarity
+				Set<Integer> U = new HashSet<Integer>(d.get(j).set);
+				Set<Integer> I = new HashSet<Integer>(d.get(j).set);
 				
-				U.addAll(q.s[i]);
-				I.retainAll(q.s[i]);
+				U.addAll(query.set);
+				I.retainAll(query.set);
 				
 				double jac = (double)I.size()/U.size();
-				if (ans.isempty()) {
+				if (ans.isempty() || ans.jac < jac) {
 					ans.jac = jac;
 					ans.index = j;
 				}
@@ -48,7 +57,7 @@ public class Main {
 //  					2. add jac
 //				}
 			}
-			if (d.label[ans.index] != q.label[i]) error++;
+			if (d.get(ans.index).label != query.label) error++;
 		}
 		System.out.println((double)error/numQuery); // error rate = (#wrongly classified ts) / (#test)
 	}

@@ -1,25 +1,24 @@
 package sts3;
 
+//import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
 public class TimeSeriesTranstoSet {
-	Set<Integer>[] s;
-	int[] label;
+	Set<Integer> set;
+	int label;
 	
-	public TimeSeriesTranstoSet(CSVreader d, double eps, double sig) {
-		this.label = d.label.clone();
-		
+	public TimeSeriesTranstoSet(CSVreader d, int index, Bound BD, double eps, double sig) {
+		set = new HashSet<Integer>();
+		this.label = d.label[index];		
 		int row, col, number;
-		int column_num = (int) Math.round((d.tmax - d.tmin)/eps);
-		for (int i = 0; i < d.data.length; i++) {
-			s[i] = new HashSet<Integer>();
-			for (int t = 0; t < d.data[0].length; t++) {// t time
-				row = (int)((d.data[i][t] - d.xmin)/sig + 1);
-				col = (int)((t - d.tmin)/eps + 1);
-				number = (row - 1) * column_num + col;
-				s[i].add(number);
-			}
+		int column_num = (int) Math.round((BD.tmax - BD.tmin)/eps);
+		
+		for (int t = 0; t < d.data[index].length; t++) {// t time
+			row = (int)((d.data[index][t] - BD.xmin)/sig + 1);
+			col = (int)((t - BD.tmin)/eps + 1);
+			number = (row - 1) * column_num + col;
+			set.add(number);
 		}
 	}
 }
