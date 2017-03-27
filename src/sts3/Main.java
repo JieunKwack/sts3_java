@@ -14,7 +14,9 @@ public class Main {
 	
 	public static CSVreader Data, Query;
 	public static TimeSeriesTranstoSet d, q;
-	public static Ans[] ans;
+//	public static Ans[] ans;
+	public static Ans ans;
+	public static int error = 0;
 	public static void main(String[] args) throws IOException {
 		Data = new CSVreader("C:/Users/monster/Documents/2016.WV/STS3/CBF/CBF_TRAIN.csv", numData, lenTs);
 		Query = new CSVreader("C:/Users/monster/Documents/2016.WV/STS3/CBF/CBF_TEST.csv", numQuery, lenTs);
@@ -23,9 +25,11 @@ public class Main {
 		d = new TimeSeriesTranstoSet(Data, epsilon, sigma);
 		q = new TimeSeriesTranstoSet(Query, epsilon, sigma);
 		
+		ans = new Ans();
+		
 		for (int i = 0; i < numQuery; i++) {
 			for (int j = 0; j < numData; j++) {
-				//jac similirity
+				//jaccard similarity
 				Set<Integer> U = new HashSet<Integer>(d.s[j]);
 				Set<Integer> I = new HashSet<Integer>(d.s[j]);
 				
@@ -33,10 +37,20 @@ public class Main {
 				I.retainAll(q.s[i]);
 				
 				double jac = (double)I.size()/U.size();
-				System.out.println(jac);
-				//minheap 정의 필요
+				if (ans.isempty()) {
+					ans.jac = jac;
+					ans.index = j;
+				}
+//				if (ans.top1 < jac) {
+//					// sudo code
+//					//minheap 정의 필요
+//  					1. remove ans.top1
+//  					2. add jac
+//				}
 			}
+			if (d.label[ans.index] != q.label[i]) error++;
 		}
+		System.out.println((double)error/numQuery); // error rate = (#wrongly classified ts) / (#test)
 	}
 	
 }
