@@ -6,9 +6,9 @@ public class Bound {
 	
 	public Bound(CSVreader data) {
 		this.tmin = 0;
-		this.tmax = data.data[0].length;
+		this.tmax = data.data[0].length-1;
 		this.xmin = getminvalue(data.data);
-		this.xmax = getmaxvalue(data.data);		
+		this.xmax = getmaxvalue(data.data);
 	}
 	
 	public Bound(double[][] data) {
