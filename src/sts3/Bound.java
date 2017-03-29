@@ -5,8 +5,8 @@ public class Bound {
 	public int rows, cols;
 	
 	public Bound(CSVreader data) {
-		this.tmin = 0;
-		this.tmax = data.data[0].length-1;
+		this.tmin = 1;
+		this.tmax = data.data[0].length;
 		this.xmin = getminvalue(data.data);
 		this.xmax = getmaxvalue(data.data);
 	}

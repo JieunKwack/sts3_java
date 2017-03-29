@@ -20,7 +20,7 @@ public class Main {
 	
 	//parameter
 	public static final double sigma = 0.18;// 0.18; 	// row cell size
-	public static final double epsilon = 21;// 21; 		// column cell size
+	public static final double epsilon = 128;// 21; 		// column cell size
 	public static final int k = 1; 						// set the # of top K
 	
 	public static CSVreader Data, Query;
@@ -40,7 +40,7 @@ public class Main {
 		Query = new CSVreader("src/CBF/CBF_TEST.csv", numQuery, lenTs);
 		
 		BD = new Bound(Data);
-		
+
 		BD.setRowsAndCols(sigma, epsilon);//need to modify
 		maxNumber = (BD.rows - 1) * (int) Math.round((BD.tmax - BD.tmin)/epsilon) + BD.cols;//need to modify
 		
