@@ -8,15 +8,16 @@ public class TimeSeriesTranstoSet {
 	Set<Integer> set;
 	int label;
 	
-	public TimeSeriesTranstoSet(CSVreader d, int index, Bound BD, double eps, double sig) {
-		set = new HashSet<Integer>();
-		this.label = d.label[index];		
+	public TimeSeriesTranstoSet(CSVreader d, int index, Bound BD, double eps, double sig) { // 1 TS to Set
 		int row, col, number;
-		int column_num = (int) Math.round((BD.tmax - BD.tmin)/eps);
+		int column_num = (int) Math.floor((BD.tmax - BD.tmin)/eps) + 1;
 		
-		for (int t = 0; t < d.data[index].length; t++) {// t time
-			row = (int)((d.data[index][t] - BD.xmin)/sig + 1);
-			col = (int)((t - BD.tmin)/eps + 1);
+		this.set = new HashSet<Integer>();	// empty set
+		this.label = d.label[index];
+		
+		for (int t = 1; t <= d.data[index].length; t++) {// t time
+			row = (int) Math.floor((d.data[index][t-1] - BD.xmin)/sig) + 1;
+			col = (int) Math.floor((t - BD.tmin)/eps) + 1;
 			number = (row - 1) * column_num + col;
 			set.add(number);
 		}

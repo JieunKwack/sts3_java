@@ -2,7 +2,6 @@ package sts3;
 
 import java.io.IOException;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -20,7 +19,7 @@ public class Main {
 	
 	//parameter
 	public static final double sigma = 0.18;// 0.18; 	// row cell size
-	public static final double epsilon = 128;// 21; 		// column cell size
+	public static final double epsilon = 21;// 21; 		// column cell size
 	public static final int k = 1; 						// set the # of top K
 	
 	public static CSVreader Data, Query;
@@ -35,31 +34,28 @@ public class Main {
 	public static void main(String[] args) throws IOException, FileNotFoundException{
 		PrintWriter pw = new PrintWriter(new File("SetbasedTs.csv")); //data 확인을 위한 용도
 	    StringBuilder sb = new StringBuilder();
+	    AscendingObj ascending = new AscendingObj();
 	    
 		Data = new CSVreader("src/CBF/CBF_TRAIN.csv", numData, lenTs);
 		Query = new CSVreader("src/CBF/CBF_TEST.csv", numQuery, lenTs);
 		
 		BD = new Bound(Data);
 
-		BD.setRowsAndCols(sigma, epsilon);//need to modify
-		maxNumber = (BD.rows - 1) * (int) Math.round((BD.tmax - BD.tmin)/epsilon) + BD.cols;//need to modify
-		
 		d = new ArrayList<TimeSeriesTranstoSet>();
 		for (int i = 0; i < numData; i++) {
 			TimeSeriesTranstoSet item = new TimeSeriesTranstoSet(Data, i, BD, epsilon, sigma);
-			d.add(item);//python 결과랑 다름..틀린 부분 있는 지 확인해볼것
-			sb.append(item);//과 똑같은 결과
-//			Object[] array = item.set.toArray();
-//			for (int a=0;a<array.length;a++){
-//				sb.append(array[a]);
-//			}
+			d.add(item);
+			sb.append(item.set);
 			sb.append('\n');
 		}
-        pw.write(sb.toString());
+        pw.write(sb.toString().replace("[", "").replace("]", ""));
         pw.close();
-        
+//
+		BD.setRowsAndCols(sigma, epsilon);//need to modify
+		maxNumber = (BD.rows - 1) * (int) Math.round((BD.tmax - BD.tmin)/epsilon) + BD.cols;//need to modify
+		
 		q = new ArrayList<TimeSeriesTranstoSet>();
-		AscendingObj ascending = new AscendingObj();
+		
 		
 		for (int i = 0; i < numQuery; i++) {//query index
 			ans = new ArrayList<Ans>();

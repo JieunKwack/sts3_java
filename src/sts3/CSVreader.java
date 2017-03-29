@@ -15,13 +15,13 @@ public class CSVreader {
 		data = new double[numofTs][lenTs];
 		label = new int[numofTs];
 		
-		int i = 0;
+		int i = 0;	//i: index of TS
 		try {
 			scan = new Scanner(input);
 			while (scan.hasNext()) {
 				String[] inputArr = scan.nextLine().split(",");
 				label[i] = (int)Double.parseDouble(inputArr[0]);
-				for (int j = 0; j < lenTs; j++){
+				for (int j = 0; j < lenTs; j++){	//j: time
 					this.data[i][j] = Double.parseDouble(inputArr[j+1]);
 				}
 				i++;
