@@ -8,7 +8,7 @@ public class TimeSeriesTranstoSet {
 	Set<Integer> set;
 	int label;
 	
-	public TimeSeriesTranstoSet(CSVreader d, int index, Bound BD, double eps, double sig) { // 1 TS to Set
+	public TimeSeriesTranstoSet(CSVreader d, int index, Bound BD, double sig, double eps) { // 1 TS to Set
 		int row, col, number;
 		int column_num = (int) Math.floor((BD.tmax - BD.tmin)/eps) + 1;
 		
@@ -23,25 +23,18 @@ public class TimeSeriesTranstoSet {
 		}
 	}
 	
-	public TimeSeriesTranstoSet(double[][] q, int label, Bound B, double eps, double sig) {
-		final int time = 0, data = 1;
-		set = new HashSet<Integer>();
-		this.label = label;
+	public TimeSeriesTranstoSet(DevidedQ q, Bound B, double sig, double eps) {
 		int row, col, number;
-		int column_num = (int) Math.round((B.tmax - B.tmin)/eps);
+		int column_num = (int) Math.floor((B.tmax - B.tmin)/eps) + 1;
 		
-		for (int i = 0; i < q[data].length; i++) {// t time
-			if (q[time][i] == 0 && q[data][i] == 0) break;
-			row = (int)((q[data][i] - B.xmin)/sig + 1);
-			col = (int)((q[time][i] - B.tmin)/eps + 1);
+		this.set = new HashSet<Integer>();
+		
+		for (int i = 0; i < q.data.size(); i++) {
+			row = (int) Math.floor((q.data.get(i) - B.xmin)/sig) + 1;
+			col = (int) Math.floor((q.time.get(i) - B.tmin)/ eps) + 1;
 			number = (row - 1) * column_num + col;
-			if(number <0){System.out.println("("+row+","+col+", "+column_num+")");}
 			set.add(number);
+//			if(number <0){System.out.println("("+row+","+col+", "+column_num+")");}
 		}
-	}
-
-	public TimeSeriesTranstoSet(Set<Integer> q, int label) {
-		this.set = q;
-		this.label = label;
 	}
 }

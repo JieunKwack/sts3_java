@@ -1,21 +1,21 @@
 package sts3;
 
 import java.io.IOException;
-import java.util.Set;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
 
-import java.io.File;
+// file I/O library 
 import java.io.FileNotFoundException;
+import java.io.File;
 import java.io.PrintWriter;
 
 public class Main {
 	public static final int numData = 30;
 	public static final int numQuery = 900;
 	public static final int lenTs = 128;
+	public static final String dataname = "CBF"; // put directory name
+	
+	public static final String trainPath = "src/"+dataname+"/"+dataname+"_TRAIN.csv";
+	public static final String testPath = "src/"+dataname+"/"+dataname+"_TEST.csv";
 	
 	//parameter
 	public static final double sigma = 0.18;// 0.18; 	// row cell size
@@ -23,128 +23,60 @@ public class Main {
 	public static final int k = 1; 						// set the # of top K
 	
 	public static CSVreader Data, Query;
-	
 	public static Bound BD;
-	public static int maxNumber;
-	
-	public static ArrayList<TimeSeriesTranstoSet> d, q;
-	public static ArrayList<Ans> ans;
+	public static ArrayList<TimeSeriesTranstoSet> d;
+	public static ArrayList<QueryTranstoSet> q;
 	public static int error = 0;
 	
 	public static void main(String[] args) throws IOException, FileNotFoundException{
-		PrintWriter pw = new PrintWriter(new File("SetbasedTs.csv")); //data 확인을 위한 용도
+		PrintWriter pw = new PrintWriter(new File("errorLists.csv"));//("SetbasedTs.csv")); //data 확인을 위한 용도
 	    StringBuilder sb = new StringBuilder();
-	    AscendingObj ascending = new AscendingObj();
 	    
-		Data = new CSVreader("src/CBF/CBF_TRAIN.csv", numData, lenTs);
-		Query = new CSVreader("src/CBF/CBF_TEST.csv", numQuery, lenTs);
+	    
+		Data = new CSVreader(trainPath, numData, lenTs);
+		Query = new CSVreader(testPath, numQuery, lenTs);
 		
-		BD = new Bound(Data);
+		BD = new Bound(Data, sigma, epsilon);
 
 		d = new ArrayList<TimeSeriesTranstoSet>();
 		for (int i = 0; i < numData; i++) {
-			TimeSeriesTranstoSet item = new TimeSeriesTranstoSet(Data, i, BD, epsilon, sigma);
+			TimeSeriesTranstoSet item = new TimeSeriesTranstoSet(Data, i, BD, sigma, epsilon);
 			d.add(item);
-			sb.append(item.set);
-			sb.append('\n');
+//			sb.append(item.set);
+//			sb.append('\n');
 		}
-        pw.write(sb.toString().replace("[", "").replace("]", ""));
-        pw.close();
-//
-		BD.setRowsAndCols(sigma, epsilon);//need to modify
-		maxNumber = (BD.rows - 1) * (int) Math.round((BD.tmax - BD.tmin)/epsilon) + BD.cols;//need to modify
+//        pw.write(sb.toString().replace("[", "").replace("]", ""));
+//        pw.close();
 		
-		q = new ArrayList<TimeSeriesTranstoSet>();
-		
-		
+		q = new ArrayList<QueryTranstoSet>();
 		for (int i = 0; i < numQuery; i++) {//query index
-			ans = new ArrayList<Ans>();
-			TimeSeriesTranstoSet query = Trans_outQuery_to_Set(i);
+			QueryTranstoSet query =  new QueryTranstoSet(Query, i, BD, sigma, epsilon);
 			q.add(query);
 			for (int j = 0; j < numData; j++) {
-				//compute jaccard similarity
-				Set<Integer> U = new HashSet<Integer>(d.get(j).set);
-				Set<Integer> I = new HashSet<Integer>(d.get(j).set);
+				double jac = query.getJacSIM(d.get(j).set);
 				
-				U.addAll(query.set);
-				I.retainAll(query.set);
-				
-				double jac = (double)I.size()/U.size();
-				if (ans.size() < k) {
-					Ans e = new Ans(jac, j);
-					ans.add(e);
-					Collections.sort(ans, ascending);
-				}
-				else if (ans.get(0).jac < jac) {
-					Ans e = new Ans(jac, j);
-					ans.remove(0);
-					ans.add(e);
-					Collections.sort(ans, ascending);
+				if (query.AnsisEmpty()) {
+					query.addAns(jac, j, d.get(j).label);
+				} else if (query.getRootOfAns().jac < jac) {
+					query.addAns(jac, j, d.get(j).label);
+					if (query.ans.size() > k) query.removeRootOfAns();
 				}
 			}
 			
-//			for(int j=0;j<k;j++){
-//				System.out.println(ans.get(j).index);
-//				System.out.println(ans.get(j).jac);
-//			}
-			
-			if (d.get(ans.get(ans.size()-1).index).label != query.label) {
+			if (query.getBestAns().label != query.label) {
+				// query ans 1NN output in file
+//				sb.append("query\n"+query.set.toString().replace("[", "").replace("]", "")+"\n");
+//				sb.append("1NN\n"+d.get(query.getBestAns().index).set.toString().replace("[","").replace("[", ""));
+				
+				sb.append(query.getBestAns().label+","+query.label+","+(error+1)+"\n"); // make string for file output				
+//				System.out.println(query.getBestAns().label+", "+query.label+", "+(error+1)); // console output
 				error++;
-//				System.out.println(ans.get(ans.size()-1).index + "\t" + d.get(ans.get(ans.size()-1).index).label);
-//				System.out.println(i + "\t" + query.label);
 			}
 		}
-//		System.out.println(maxNumber);
-//		System.out.println(BD.rows + " " + BD.cols);
+		pw.write(sb.toString()); // file output
+		pw.close(); // print writer for file close
 		System.out.println(error + "\t" +(double)error/numQuery); // error rate = (#wrongly classified ts) / (#test)
 	}
-
-	public static TimeSeriesTranstoSet Trans_outQuery_to_Set(int index) {
-		//divide q into qin, qout
-		ArrayList<double[][]> qinout = divideQintoQinAndQout(index, BD);
-		TimeSeriesTranstoSet Qin = new TimeSeriesTranstoSet(qinout.get(0), Query.label[index], BD, epsilon, sigma);		
-		Bound BQ = new Bound(qinout.get(1));		
-		TimeSeriesTranstoSet qout = new TimeSeriesTranstoSet(qinout.get(1), Query.label[index], BQ, epsilon, sigma);
-		Set<Integer> Qout = new HashSet<Integer>();
-		for (Iterator<Integer> i = qout.set.iterator(); i.hasNext(); ) {
-			Qout.add(i.next() + maxNumber);
-		}
-		Qin.set.addAll(Qout);
-		
-		return Qin;
-	}
-	
-	public static ArrayList<double[][]> divideQintoQinAndQout(int index, Bound BD) {
-		final int time = 0;
-		final int data = 1;
-		
-		ArrayList<double[][]> qinout = new ArrayList<double[][]>(2);
-		double[][] qin = new double[2][lenTs];
-		double[][] qout = new double[2][lenTs];
-		
-		int jin = 0, jout = 0;
-		for (int i = 0; i < lenTs; i++){
-			if (Query.data[index][i] > BD.xmin && Query.data[index][i] < BD.xmax) {
-				qin[time][jin] = i;
-				qin[data][jin] = Query.data[index][i];
-				jin++;
-			} else {
-				qout[time][jout] = i;
-				qout[data][jout] = Query.data[index][i];
-				jout++;
-			}
-		}
-		
-		qinout.add(qin);
-		qinout.add(qout);
-		
-		return qinout;
-	}
 }
 
-class AscendingObj implements Comparator<Ans> {	 
-    @Override
-    public int compare(Ans lhs, Ans rhs) {
-        return Double.compare(lhs.getJac(), rhs.getJac());
-    }
-}
+

@@ -2,36 +2,39 @@ package sts3;
 
 public class Bound {
 	public double tmin, tmax, xmin, xmax;
-	public int rows, cols;
+	public int maxNumber;
 	
-	public Bound(CSVreader data) {
+	public Bound(CSVreader data, double sig, double eps) {
 		this.tmin = 1;
 		this.tmax = data.data[0].length;
 		this.xmin = getminvalue(data.data);
 		this.xmax = getmaxvalue(data.data);
+		this.maxNumber = getmaxNumber(sig, eps);
 	}
 	
-	public Bound(double[][] data) {
-		final int t = 0, d = 1;
+	public Bound(DevidedQ dq, double sig, double eps) {
+		final int index = dq.time.size();
 		
-		this.tmin = data[t][0];
-		this.tmax = data[t][0];
-		for (int i = 0; i < data[d].length; i++){
-			if ( data[t][i] < this.tmin ) this.tmin = data[t][i];
-			if ( data[t][i] > this.tmax ) this.tmax = data[t][i];
+		this.tmin = dq.time.get(0);
+		this.tmax = dq.time.get(index-1);
+		
+		this.xmin = dq.data.get(0);
+		this.xmax = dq.data.get(0);
+		for (int i = 0; i < index; i++){
+			double val = dq.data.get(i);
+			if ( val < this.xmin ) this.xmin = val;
+			else if ( val > this.xmax ) this.xmax = val;
 		}
 		
-		this.xmin = data[d][0];
-		this.xmax = data[d][0];
-		for (int i = 0; i < data[d].length; i++){
-			if ( data[d][i] < this.xmin ) this.xmin = data[d][i];
-			if ( data[d][i] > this.xmax ) this.xmax = data[d][i];
-		}
+		this.maxNumber = getmaxNumber(sig, eps);
 	}
 	
-	public void setRowsAndCols(double sig, double eps) {
-		this.rows = (int)((this.xmax - this.xmin)/sig + 1);
-		this.cols = (int)((this.tmax - this.tmin)/eps + 1);
+	public int getmaxNumber(double sig, double eps) {
+		int cell_num, row_num, col_num;
+		row_num = (int) Math.floor((this.xmax - this.xmin)/sig) + 1;
+		col_num = (int) Math.floor((this.tmax - this.tmin)/eps) + 1;
+		cell_num = row_num * col_num;
+		return cell_num;
 	}
 	
 	private double getminvalue(double[][] d) {
