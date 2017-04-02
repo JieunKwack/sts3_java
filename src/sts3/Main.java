@@ -9,18 +9,20 @@ import java.io.File;
 import java.io.PrintWriter;
 
 public class Main {
+	// parameter
 	public static final int numData = 30;
 	public static final int numQuery = 900;
 	public static final int lenTs = 128;
-	public static final String dataname = "CBF"; // put directory name
 	
-	public static final String trainPath = "src/"+dataname+"/"+dataname+"_TRAIN.csv";
-	public static final String testPath = "src/"+dataname+"/"+dataname+"_TEST.csv";
-	
-	//parameter
 	public static final double sigma = 0.18;// 0.18; 	// row cell size
 	public static final double epsilon = 21;// 21; 		// column cell size
 	public static final int k = 1; 						// set the # of top K
+	
+	public static final String dataname = "CBF"; // put directory name
+	//-----------------------------------------------------------------------------------
+	
+	public static final String trainPath = "src/"+dataname+"/"+dataname+"_TRAIN.csv";
+	public static final String testPath = "src/"+dataname+"/"+dataname+"_TEST.csv";
 	
 	public static CSVreader Data, Query;
 	public static Bound BD;
