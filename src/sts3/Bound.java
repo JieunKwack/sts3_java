@@ -2,7 +2,7 @@ package sts3;
 
 public class Bound {
 	public double tmin, tmax, xmin, xmax;
-	public int maxNumber;
+	public int maxNumber, numCol, numRow;
 	
 	public Bound(CSVreader data, double sig, double eps) {
 		this.tmin = 1;
@@ -12,29 +12,19 @@ public class Bound {
 		this.maxNumber = getmaxNumber(sig, eps);
 	}
 	
-	public Bound(DevidedQ dq, double sig, double eps) {
-		final int index = dq.time.size();
-		
-		this.tmin = dq.time.get(0);
-		this.tmax = dq.time.get(index-1);
-		
-		this.xmin = dq.data.get(0);
-		this.xmax = dq.data.get(0);
-		for (int i = 0; i < index; i++){
-			double val = dq.data.get(i);
-			if ( val < this.xmin ) this.xmin = val;
-			else if ( val > this.xmax ) this.xmax = val;
-		}
-		
-		this.maxNumber = getmaxNumber(sig, eps);
+	public void getBound(Bound A) {
+		if (A.tmin < this.tmin) this.tmin = A.tmin;
+		if (A.tmax > this.tmax) this.tmax = A.tmax;
+		if (A.xmin < this.xmin) this.xmin = A.xmin;
+		if (A.xmax > this.xmax) this.xmax = A.xmax;
 	}
 	
 	public int getmaxNumber(double sig, double eps) {
-		int cell_num, row_num, col_num;
-		row_num = (int) Math.floor((this.xmax - this.xmin)/sig) + 1;
-		col_num = (int) Math.floor((this.tmax - this.tmin)/eps) + 1;
-		cell_num = row_num * col_num;
-		return cell_num;
+		int theNumOfCell;
+		this.numRow = (int) Math.floor((this.xmax - this.xmin)/sig) + 1;
+		this.numCol = (int) Math.floor((this.tmax - this.tmin)/eps) + 1;
+		theNumOfCell = this.numRow * this.numCol;
+		return theNumOfCell;
 	}
 	
 	private double getminvalue(double[][] d) {

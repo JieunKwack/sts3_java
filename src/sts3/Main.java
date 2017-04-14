@@ -14,8 +14,12 @@ public class Main {
 	public static final int numQuery = 900;
 	public static final int lenTs = 128;
 	
-	public static final double sigma = 0.18;// 0.18; 	// row cell size
-	public static final double epsilon = 21;// 21; 		// column cell size
+//	public static final double sigma = 0.88;// 0.18; 	// row cell size
+//	public static final double epsilon = 1;// 21; 		// column cell size
+	
+	public static final double unitTsize = 1; //column
+	public static final double unitXsize = 0.05; //row
+	
 	public static final int k = 1; 						// set the # of top K
 	
 	public static final String dataname = "CBF"; // put directory name
@@ -25,60 +29,55 @@ public class Main {
 	public static final String testPath = "src/"+dataname+"/"+dataname+"_TEST.csv";
 	
 	public static CSVreader Data, Query;
-	public static Bound BD;
-	public static ArrayList<TimeSeriesTranstoSet> d;
-	public static ArrayList<QueryTranstoSet> q;
-	public static int error = 0;
+	public static Bound BD, BQ;
+	public static ArrayList<TimeSeriesTranstoSet> unitD, unitQ, d, q;
+//	public static ArrayList<QueryTranstoSet> q;
+//	public static int errorCounts = 0;
 	
 	public static void main(String[] args) throws IOException, FileNotFoundException{
+		// File output
 		PrintWriter pw = new PrintWriter(new File("errorLists.csv"));//("SetbasedTs.csv")); //data 확인을 위한 용도
 	    StringBuilder sb = new StringBuilder();
-	    
 	    
 		Data = new CSVreader(trainPath, numData, lenTs);
 		Query = new CSVreader(testPath, numQuery, lenTs);
 		
-		BD = new Bound(Data, sigma, epsilon);
-
-		d = new ArrayList<TimeSeriesTranstoSet>();
-		for (int i = 0; i < numData; i++) {
-			TimeSeriesTranstoSet item = new TimeSeriesTranstoSet(Data, i, BD, sigma, epsilon);
-			d.add(item);
-//			sb.append(item.set);
-//			sb.append('\n');
-		}
-//        pw.write(sb.toString().replace("[", "").replace("]", ""));
-//        pw.close();
+		BD = new Bound(Data, unitXsize, unitTsize);
+		BQ = new Bound(Query, unitXsize, unitTsize);
+		BD.getBound(BQ); //get new Bound
 		
-		q = new ArrayList<QueryTranstoSet>();
-		for (int i = 0; i < numQuery; i++) {//query index
-			QueryTranstoSet query =  new QueryTranstoSet(Query, i, BD, sigma, epsilon);
-			q.add(query);
-			for (int j = 0; j < numData; j++) {
-				double jac = query.getJacSIM(d.get(j).set);
-				
-				if (query.AnsisEmpty()) {
-					query.addAns(jac, j, d.get(j).label);
-				} else if (query.getRootOfAns().jac < jac) {
-					query.addAns(jac, j, d.get(j).label);
-					if (query.ans.size() > k) query.removeRootOfAns();
-				}
-			}
-			
-			if (query.getBestAns().label != query.label) {
-				// query ans 1NN output in file
-//				sb.append("query\n"+query.set.toString().replace("[", "").replace("]", "")+"\n");
-//				sb.append("1NN\n"+d.get(query.getBestAns().index).set.toString().replace("[","").replace("[", ""));
-				
-				sb.append(query.getBestAns().label+","+query.label+","+(error+1)+"\n"); // make string for file output				
-//				System.out.println(query.getBestAns().label+", "+query.label+", "+(error+1)); // console output
-				error++;
-			}
+		unitD = new ArrayList<TimeSeriesTranstoSet>();
+		for (int i = 0; i < numData; i++) {
+			TimeSeriesTranstoSet item = new TimeSeriesTranstoSet(Data, i, BD, unitXsize, unitTsize);
+			unitD.add(item);																		//			sb.append(item.set);//			sb.append('\n');
 		}
+																								//        pw.write(sb.toString().replace("[", "").replace("]", "")); //        pw.close();
+		unitQ = new ArrayList<TimeSeriesTranstoSet>();
+		for (int i = 0; i < numQuery; i++) {
+			TimeSeriesTranstoSet item = new TimeSeriesTranstoSet(Query, i, BD, unitXsize, unitTsize);
+			unitQ.add(item);
+		}
+
+		OptimizeAlg OA = new OptimizedAlg(unitD, unitQ, BD); // + unitXsize, unitTsize);
+		
+		
+		sts3Naive sts3 = new sts3Naive(d, q);
+		sts3.run(k);
+		
+		System.out.println("errorCount\terrorRate");
+		System.out.println(sts3.getErrorCounts() + "\t" + sts3.getErrorRate());
+		
+		weightedSTS3 w_sts3 = new weightedSTS3(d, q);
+		w_sts3.run(k);
+		
+		System.out.println(w_sts3.getErrorCounts() + "\t" + w_sts3.getErrorRate());
+		
+		TfIdfSTS3 tfidf_sts3 = new TfIdfSTS3(d, q);
+		tfidf_sts3.run(k);
+		
+		System.out.println(tfidf_sts3.getErrorCounts() + "\t" + tfidf_sts3.getErrorRate());		
+		
 		pw.write(sb.toString()); // file output
 		pw.close(); // print writer for file close
-		System.out.println(error + "\t" +(double)error/numQuery); // error rate = (#wrongly classified ts) / (#test)
 	}
 }
-
-

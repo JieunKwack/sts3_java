@@ -23,18 +23,18 @@ public class TimeSeriesTranstoSet {
 		}
 	}
 	
-	public TimeSeriesTranstoSet(DevidedQ q, Bound B, double sig, double eps) {
-		int row, col, number;
-		int column_num = (int) Math.floor((B.tmax - B.tmin)/eps) + 1;
-		
-		this.set = new HashSet<Integer>();
-		
-		for (int i = 0; i < q.data.size(); i++) {
-			row = (int) Math.floor((q.data.get(i) - B.xmin)/sig) + 1;
-			col = (int) Math.floor((q.time.get(i) - B.tmin)/ eps) + 1;
-			number = (row - 1) * column_num + col;
-			set.add(number);
-//			if(number <0){System.out.println("("+row+","+col+", "+column_num+")");}
-		}
-	}
+//	public TimeSeriesTranstoSet(DevidedQ q, Bound B, double sig, double eps) {
+//		int row, col, number;
+//		int column_num = (int) Math.floor((B.tmax - B.tmin)/eps) + 1;
+//		
+//		this.set = new HashSet<Integer>();
+//		
+//		for (int i = 0; i < q.data.size(); i++) {
+//			row = (int) Math.floor((q.data.get(i) - B.xmin)/sig) + 1;
+//			col = (int) Math.floor((q.time.get(i) - B.tmin)/ eps) + 1;
+//			number = (row - 1) * column_num + col;
+//			set.add(number);
+////			if(number <0){System.out.println("("+row+","+col+", "+column_num+")");}
+//		}
+//	}
 }
