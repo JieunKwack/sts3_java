@@ -58,25 +58,25 @@ public class Main {
 			unitQ.add(item);
 		}
 
-		OptimizeAlg OA = new OptimizedAlg(unitD, unitQ, BD); // + unitXsize, unitTsize);
-		
-		
-		sts3Naive sts3 = new sts3Naive(d, q);
-		sts3.run(k);
-		
-		System.out.println("errorCount\terrorRate");
-		System.out.println(sts3.getErrorCounts() + "\t" + sts3.getErrorRate());
-		
-		weightedSTS3 w_sts3 = new weightedSTS3(d, q);
-		w_sts3.run(k);
-		
-		System.out.println(w_sts3.getErrorCounts() + "\t" + w_sts3.getErrorRate());
-		
-		TfIdfSTS3 tfidf_sts3 = new TfIdfSTS3(d, q);
-		tfidf_sts3.run(k);
-		
-		System.out.println(tfidf_sts3.getErrorCounts() + "\t" + tfidf_sts3.getErrorRate());		
-		
+		OptimizeAlg OA = new OptimizeAlg(unitD, unitQ, BD, unitXsize, unitTsize);
+		OA.getCellSize();
+		System.out.println("done");
+//		sts3Naive sts3 = new sts3Naive(d, q);
+//		sts3.run(k);
+//		
+//		System.out.println("errorCount\terrorRate");
+//		System.out.println(sts3.getErrorCounts() + "\t" + sts3.getErrorRate());
+//		
+//		weightedSTS3 w_sts3 = new weightedSTS3(d, q);
+//		w_sts3.run(k);
+//		
+//		System.out.println(w_sts3.getErrorCounts() + "\t" + w_sts3.getErrorRate());
+//		
+//		TfIdfSTS3 tfidf_sts3 = new TfIdfSTS3(d, q);
+//		tfidf_sts3.run(k);
+//		
+//		System.out.println(tfidf_sts3.getErrorCounts() + "\t" + tfidf_sts3.getErrorRate());		
+//		
 		pw.write(sb.toString()); // file output
 		pw.close(); // print writer for file close
 	}

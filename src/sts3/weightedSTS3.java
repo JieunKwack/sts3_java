@@ -31,6 +31,17 @@ public class weightedSTS3 {
 		buildInfoGainPerCell();
 	}
 	
+	public weightedSTS3(ArrayList<TimeSeriesTranstoSet> d) {
+		this.data = d;
+		this.errorCounts = 0;
+		
+		//HEASOO
+		buildCountPerClass();
+		this.entropyInitial = computeEntropy(this.countPerClass);
+		buildCountPerCell();
+		buildEntropyPerCell();
+		buildInfoGainPerCell();
+	}
 	private void buildCountPerClass() {
         // calculate the # of ts for each class
 		this.countPerClass = new HashMap<Integer, Integer>(); // <cell_id, count>
@@ -175,5 +186,9 @@ public class weightedSTS3 {
 	
 	public double getErrorRate() {	
 		return this.errorRate;
+	}
+	
+	public HashMap<Integer, Double> getInfoGainPerCell() {
+		return this.infoGainPerCell;
 	}
 }

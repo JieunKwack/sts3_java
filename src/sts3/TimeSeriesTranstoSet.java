@@ -23,6 +23,10 @@ public class TimeSeriesTranstoSet {
 		}
 	}
 	
+	public TimeSeriesTranstoSet() {
+		this.set = new HashSet<Integer>();
+	}
+	
 //	public TimeSeriesTranstoSet(DevidedQ q, Bound B, double sig, double eps) {
 //		int row, col, number;
 //		int column_num = (int) Math.floor((B.tmax - B.tmin)/eps) + 1;
